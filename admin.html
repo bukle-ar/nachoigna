@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Admin - NACHO IGNA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+    <!-- ===================== LOGIN ===================== -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-card">
+            <div class="login-logo">NI</div>
+            <h1 class="login-title">Panel de Admin</h1>
+            <p class="login-subtitle">Ingresá tu contraseña para acceder</p>
+            <div class="login-form">
+                <div class="input-group">
+                    <input type="password" id="loginPassword" placeholder="Contraseña" autocomplete="current-password">
+                    <button class="input-eye" id="togglePass" type="button" aria-label="Mostrar contraseña">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <button class="btn btn-primary btn-full" id="loginBtn">INGRESAR</button>
+                <p class="login-error" id="loginError"></p>
+            </div>
+            <a href="index.html" class="login-back"><i class="fas fa-arrow-left"></i> Volver al sitio</a>
+        </div>
+    </div>
+
+    <!-- ===================== ADMIN PANEL ===================== -->
+    <div class="admin-panel" id="adminPanel" style="display:none;">
+        
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <span class="sidebar-logo">NI</span>
+                <span class="sidebar-title">ADMIN</span>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="sidebar-link active" data-tab="fechas">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Fechas</span>
+                </button>
+                <button class="sidebar-link" data-tab="galeria">
+                    <i class="fas fa-images"></i>
+                    <span>Galería</span>
+                </button>
+                <button class="sidebar-link" data-tab="presskit">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Presskit</span>
+                </button>
+                <button class="sidebar-link" data-tab="config">
+                    <i class="fas fa-cog"></i>
+                    <span>Configuración</span>
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="index.html" class="sidebar-link sidebar-link-subtle">
+                    <i class="fas fa-external-link-alt"></i>
+                    <span>Ver sitio</span>
+                </a>
+                <button class="sidebar-link sidebar-link-subtle" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar sesión</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Mobile top bar -->
+        <div class="admin-topbar" id="adminTopbar">
+            <button class="topbar-menu" id="sidebarToggle" aria-label="Menú">
+                <i class="fas fa-bars"></i>
+            </button>
+            <span class="topbar-title">NACHO IGNA ADMIN</span>
+            <button class="topbar-logout" id="logoutBtnMobile" aria-label="Cerrar sesión">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            
+            <!-- ---- FECHAS TAB ---- -->
+            <div class="tab-content active" id="tab-fechas">
+                <div class="tab-header">
+                    <div>
+                        <h2 class="tab-title">Próximas Fechas</h2>
+                        <p class="tab-desc">Agregá, editá o eliminá tus presentaciones</p>
+                    </div>
+                    <button class="btn btn-primary" id="addFechaBtn">
+                        <i class="fas fa-plus"></i> Nueva Fecha
+                    </button>
+                </div>
+
+                <!-- Add/Edit Fecha Form -->
+                <div class="form-card" id="fechaForm" style="display:none;">
+                    <h3 class="form-title" id="fechaFormTitle">Nueva Fecha</h3>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="fechaDate">Fecha</label>
+                            <input type="date" id="fechaDate" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="fechaName">Nombre del Evento</label>
+                            <input type="text" id="fechaName" placeholder="Ej: EUPHORIA" maxlength="100" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="fechaLocation">Lugar</label>
+                            <input type="text" id="fechaLocation" placeholder="Ej: Buenos Aires" maxlength="100" required>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-secondary" id="cancelFechaBtn">Cancelar</button>
+                        <button class="btn btn-primary" id="saveFechaBtn">Guardar</button>
+                    </div>
+                    <input type="hidden" id="fechaEditId" value="">
+                </div>
+
+                <!-- Fechas List -->
+                <div class="data-list" id="fechasAdminList">
+                    <p class="empty-state" id="fechasAdminEmpty">No hay fechas cargadas. ¡Agregá tu primera fecha!</p>
+                </div>
+            </div>
+
+            <!-- ---- GALERIA TAB ---- -->
+            <div class="tab-content" id="tab-galeria">
+                <div class="tab-header">
+                    <div>
+                        <h2 class="tab-title">Galería de Fotos</h2>
+                        <p class="tab-desc">Subí y organizá las fotos de tus presentaciones</p>
+                    </div>
+                    <label class="btn btn-primary" for="galleryUpload">
+                        <i class="fas fa-upload"></i> Subir Fotos
+                    </label>
+                    <input type="file" id="galleryUpload" accept="image/*" multiple style="display:none;">
+                </div>
+
+                <div class="gallery-admin-grid" id="galleryAdminGrid">
+                    <p class="empty-state" id="galleryAdminEmpty">No hay fotos en la galería. ¡Subí tu primera foto!</p>
+                </div>
+
+                <p class="gallery-note"><i class="fas fa-info-circle"></i> Las fotos se almacenan en el navegador. Tamaño máximo recomendado: 2MB por foto.</p>
+            </div>
+
+            <!-- ---- PRESSKIT TAB ---- -->
+            <div class="tab-content" id="tab-presskit">
+                <div class="tab-header">
+                    <div>
+                        <h2 class="tab-title">Presskit / Biografía</h2>
+                        <p class="tab-desc">Editá tu biografía y trayectoria</p>
+                    </div>
+                </div>
+
+                <div class="form-card">
+                    <div class="input-group">
+                        <label for="presskitTextarea">Tu biografía</label>
+                        <textarea id="presskitTextarea" rows="10" placeholder="Escribí tu biografía acá..." maxlength="2000"></textarea>
+                        <span class="char-count"><span id="presskitCharCount">0</span>/2000</span>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-primary" id="savePresskitBtn">
+                            <i class="fas fa-save"></i> Guardar Biografía
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ---- CONFIG TAB ---- -->
+            <div class="tab-content" id="tab-config">
+                <div class="tab-header">
+                    <div>
+                        <h2 class="tab-title">Configuración</h2>
+                        <p class="tab-desc">Redes sociales, contraseña y más</p>
+                    </div>
+                </div>
+
+                <div class="form-card">
+                    <h3 class="form-title">Redes Sociales</h3>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="cfgInstagram"><i class="fab fa-instagram"></i> Instagram URL</label>
+                            <input type="url" id="cfgInstagram" placeholder="https://www.instagram.com/...">
+                        </div>
+                        <div class="input-group">
+                            <label for="cfgYoutube"><i class="fab fa-youtube"></i> YouTube URL</label>
+                            <input type="url" id="cfgYoutube" placeholder="https://www.youtube.com/...">
+                        </div>
+                        <div class="input-group">
+                            <label for="cfgSpotify"><i class="fab fa-spotify"></i> Spotify URL</label>
+                            <input type="url" id="cfgSpotify" placeholder="https://open.spotify.com/...">
+                        </div>
+                        <div class="input-group">
+                            <label for="cfgWhatsapp"><i class="fab fa-whatsapp"></i> WhatsApp Link</label>
+                            <input type="url" id="cfgWhatsapp" placeholder="https://wa.me/549...">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-card">
+                    <h3 class="form-title">Texto del Inicio</h3>
+                    <div class="input-group">
+                        <label for="cfgHeroDesc">Descripción debajo de tu nombre</label>
+                        <input type="text" id="cfgHeroDesc" placeholder="Ej: Sesiones que mueven al público" maxlength="80">
+                    </div>
+                </div>
+
+                <div class="form-card">
+                    <h3 class="form-title">Fotos del Inicio (Hero)</h3>
+                    <p class="form-hint">Subí hasta 3 fotos que se mostrarán rotando en el fondo del inicio.</p>
+                    <label class="btn btn-secondary" for="heroUpload" style="margin-top:12px;">
+                        <i class="fas fa-upload"></i> Subir Fotos del Hero
+                    </label>
+                    <input type="file" id="heroUpload" accept="image/*" multiple style="display:none;">
+                    <div class="hero-preview-row" id="heroPreviewRow"></div>
+                </div>
+
+                <div class="form-card">
+                    <h3 class="form-title">Cambiar Contraseña</h3>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="cfgNewPass">Nueva contraseña</label>
+                            <input type="password" id="cfgNewPass" placeholder="Mínimo 4 caracteres" minlength="4">
+                        </div>
+                        <div class="input-group">
+                            <label for="cfgConfirmPass">Confirmar contraseña</label>
+                            <input type="password" id="cfgConfirmPass" placeholder="Repetí la contraseña">
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" id="changePassBtn" style="margin-top:12px;">
+                        <i class="fas fa-key"></i> Cambiar Contraseña
+                    </button>
+                </div>
+
+                <div class="form-actions" style="margin-top:24px;">
+                    <button class="btn btn-primary" id="saveConfigBtn">
+                        <i class="fas fa-save"></i> Guardar Configuración
+                    </button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Toast notification -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastText">Guardado correctamente</span>
+    </div>
+
+    <!-- Confirm dialog -->
+    <div class="confirm-overlay" id="confirmOverlay">
+        <div class="confirm-card">
+            <p id="confirmText">¿Estás seguro?</p>
+            <div class="confirm-actions">
+                <button class="btn btn-secondary" id="confirmCancel">Cancelar</button>
+                <button class="btn btn-danger" id="confirmOk">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>
