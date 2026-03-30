@@ -8,12 +8,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===================== CONFIG =====================
     // Default social links - Nacho can update these in admin
     const DEFAULT_CONFIG = {
-        instagram: 'https://www.instagram.com/nachoigna/',
-        youtube: 'https://www.youtube.com/@nachoigna',
-        spotify: 'https://open.spotify.com/',
-        whatsapp: 'https://wa.me/5491100000000',
-        heroDescription: 'Sesiones que mueven al público',
-        presskitBio: 'Nacho Igna es un DJ y productor emergente de la escena argentina, conocido por sus sets energéticos que fusionan los mejores ritmos urbanos y electrónicos. Con una presencia creciente en la noche porteña y bolichera, ha logrado ganarse un lugar en los escenarios más importantes.'
+        instagram: 'https://www.instagram.com/nachoignaa/',
+        youtube: 'https://www.youtube.com/channel/UCLgStMWiK7lfUWBo0Eq337g',
+        spotify: 'https://open.spotify.com/intl-es/artist/7CDiQho6vZLwcwIzsInqIW?si=9FNpxl62T4GGd5qSdn3Drw',
+        whatsapp: 'https://wa.me/5491151362029',
     };
 
     // ===================== DATA LOADING =====================
@@ -27,6 +25,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadFechas() {
+    return [
+        { id: '1', date: '2026-04-03', name: 'CRUZA RECOLETA', location: 'Buenos Aires' },
+        { id: '2', date: '2026-04-04', name: 'LA MALA PUB', location: 'Buenos Aires' },
+        { id: '3', date: '2026-04-05', name: 'MALDINI DOT', location: 'Buenos Aires' },
+    ];
+}
+
+
+    /*function loadFechas() {
         try {
             const saved = localStorage.getItem('nachoigna_fechas');
             if (saved) {
@@ -43,14 +50,25 @@ document.addEventListener('DOMContentLoaded', () => {
             return [];
         }
     }
+        */
 
     function loadGallery() {
         try {
             const saved = localStorage.getItem('nachoigna_gallery');
-            return saved ? JSON.parse(saved) : [];
-        } catch {
-            return [];
-        }
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed.length > 0) return parsed;
+            }
+        } catch {}
+        // Fotos por defecto desde assets/gallery/
+        return [
+            { id: '1', src: 'assets/gallery/foto-01.jpg', alt: 'Show' },
+            { id: '2', src: 'assets/gallery/foto-02.jpg', alt: 'Show' },
+            { id: '3', src: 'assets/gallery/foto-03.jpg', alt: 'Show' },
+            { id: '4', src: 'assets/gallery/foto-04.jpg', alt: 'Show' },
+            { id: '5', src: 'assets/gallery/foto-05.jpg', alt: 'Show' },
+            { id: '6', src: 'assets/gallery/foto-06.jpg', alt: 'Show' },
+        ];
     }
 
     // ===================== APPLY CONFIG =====================
@@ -92,14 +110,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Check if admin uploaded hero images
     const heroImages = (() => {
+    const saved = (() => {
         try {
-            const saved = localStorage.getItem('nachoigna_heroImages');
-            return saved ? JSON.parse(saved) : [];
-        } catch {
-            return [];
-        }
+            const s = localStorage.getItem('nachoigna_heroImages');
+            return s ? JSON.parse(s) : [];
+        } catch { return []; }
     })();
-
+    if (saved.length > 0) return saved;
+    // Fotos por defecto desde assets/
+    return [
+        'assets/hero-01.jpeg',
+        'assets/hero-02.jpeg',
+        'assets/hero-03.jpeg',
+        'assets/hero-04.jpeg'
+    ];
+    })();
     if (heroImages.length > 0) {
         // Replace gradient slides with actual images
         slides.forEach((slide, i) => {
@@ -369,4 +394,53 @@ document.addEventListener('DOMContentLoaded', () => {
         div.appendChild(document.createTextNode(text));
         return div.innerHTML;
     }
+
+    // ===================== RIDER MODAL =====================
+    const openRiderBtn = document.getElementById('openRiderBtn');
+    const closeRiderBtn = document.getElementById('closeRiderBtn');
+    const riderModal = document.getElementById('riderModal');
+    const riderModalBackdrop = document.getElementById('riderModalBackdrop');
+    const riderZoomOverlay = document.getElementById('riderZoomOverlay');
+    const riderZoomBackdrop = document.getElementById('riderZoomBackdrop');
+    const riderZoomClose = document.getElementById('riderZoomClose');
+    const riderZoomImg = document.getElementById('riderZoomImg');
+
+    if (openRiderBtn) {
+        openRiderBtn.addEventListener('click', () => {
+            riderModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+    }
+
+    function closeRider() {
+        riderModal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function closeZoom() {
+        riderZoomOverlay.classList.remove('active');
+    }
+
+    if (closeRiderBtn) closeRiderBtn.addEventListener('click', closeRider);
+    if (riderModalBackdrop) riderModalBackdrop.addEventListener('click', closeRider);
+    if (riderZoomClose) riderZoomClose.addEventListener('click', closeZoom);
+    if (riderZoomBackdrop) riderZoomBackdrop.addEventListener('click', closeZoom);
+
+    // Zoom buttons — delegación de eventos
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.rider-photo-zoom');
+        if (!btn) return;
+        const src = btn.dataset.zoom;
+        if (src && riderZoomImg) {
+            riderZoomImg.src = src;
+            riderZoomOverlay.classList.add('active');
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeRider();
+            closeZoom();
+        }
+    });
 });

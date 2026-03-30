@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Nacho Igna - DJ & Productor. Próximas fechas, presskit y contacto.">
     <meta name="theme-color" content="#0a0a0a">
-    <title>NACHO IGNA | DJ</title>
+    <title>NACHO IGNA DJ</title>
     <link rel="stylesheet" href="css/desktop.css">
     <link rel="stylesheet" href="css/mobile.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
@@ -19,12 +18,14 @@
     <!-- ===================== NAVIGATION ===================== -->
     <nav class="main-nav" id="mainNav">
         <div class="nav-logo">
-            <span class="nav-logo-text">NI</span>
+            <a href="#inicio">
+                <img src="assets/logo-nachoigna.png" alt="Nacho Igna" class="nav-logo-img">
+            </a>
         </div>
         <div class="nav-links" id="navLinks">
             <a href="#inicio" class="nav-link active" data-section="inicio">INICIO</a>
-            <a href="#presskit" class="nav-link" data-section="presskit">PRESSKIT</a>
             <a href="#fechas" class="nav-link" data-section="fechas">FECHAS</a>
+            <a href="#presskit" class="nav-link" data-section="presskit">PRESSKIT</a>
             <a href="#galeria" class="nav-link" data-section="galeria">GALERÍA</a>
             <a href="#rider" class="nav-link" data-section="rider">RIDER</a>
             <a href="#contacto" class="nav-link" data-section="contacto">CONTACTO</a>
@@ -40,8 +41,8 @@
     <div class="mobile-menu-overlay" id="mobileMenu">
         <div class="mobile-menu-content">
             <a href="#inicio" class="mobile-link" data-section="inicio">INICIO</a>
-            <a href="#presskit" class="mobile-link" data-section="presskit">PRESSKIT</a>
             <a href="#fechas" class="mobile-link" data-section="fechas">FECHAS</a>
+            <a href="#presskit" class="mobile-link" data-section="presskit">PRESSKIT</a>
             <a href="#galeria" class="mobile-link" data-section="galeria">GALERÍA</a>
             <a href="#rider" class="mobile-link" data-section="rider">RIDER</a>
             <a href="#contacto" class="mobile-link" data-section="contacto">CONTACTO</a>
@@ -68,13 +69,10 @@
         <div class="hero-particles" id="heroParticles"></div>
         
         <div class="hero-content">
-            <div class="hero-subtitle-top" data-animate="fade-down">DJ & PRODUCTOR</div>
             <h1 class="hero-title" data-animate="scale-in">
-                <span class="hero-title-line">NACHO</span>
-                <span class="hero-title-line hero-title-accent">IGNA</span>
+                <img src="assets/logo-nachoigna.png" alt="Nacho Igna" class="hero-logo-img">
             </h1>
-            <p class="hero-description" id="heroDescription" data-animate="fade-up">Sesiones que mueven al público</p>
-            <div class="hero-social" data-animate="fade-up-delay">
+            <div class="hero-social" data-animate="fade-up">
                 <a href="#" class="hero-social-link" id="heroInstagram" aria-label="Instagram" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
                 <a href="#" class="hero-social-link" id="heroYoutube" aria-label="YouTube" target="_blank" rel="noopener"><i class="fab fa-youtube"></i></a>
                 <a href="#" class="hero-social-link" id="heroSpotify" aria-label="Spotify" target="_blank" rel="noopener"><i class="fab fa-spotify"></i></a>
@@ -82,62 +80,18 @@
             </div>
         </div>
         
-        <div class="hero-scroll-indicator" data-animate="fade-up-delay">
+        <div class="hero-scroll-indicator" data-animate="fade-up">
             <span>DESLIZÁ</span>
             <div class="scroll-line"></div>
         </div>
     </section>
 
-    <!-- ===================== PRESSKIT ===================== -->
-    <section class="section presskit" id="presskit">
-        <div class="section-glow section-glow-red"></div>
-        <div class="container">
-            <div class="section-header" data-animate="fade-right">
-                <span class="section-number">01</span>
-                <h2 class="section-title">PRESSKIT</h2>
-                <div class="section-line"></div>
-            </div>
-            <div class="presskit-content">
-                <div class="presskit-text" data-animate="fade-right">
-                    <p id="presskitBio">Nacho Igna es un DJ y productor emergente de la escena argentina, conocido por sus sets energéticos que fusionan los mejores ritmos urbanos y electrónicos. Con una presencia creciente en la noche porteña y bolichera, ha logrado ganarse un lugar en los escenarios más importantes.</p>
-                </div>
-                <div class="presskit-highlights" data-animate="fade-left">
-                    <h3 class="presskit-highlights-title">VENUES DESTACADOS</h3>
-                    <div class="highlights-grid">
-                        <div class="highlight-category">
-                            <h4>BOLICHES & BARES</h4>
-                            <ul class="highlight-list" id="venuesList">
-                                <li>Cruza Recoleta</li>
-                                <li>La Mala Pub</li>
-                                <li>Behind Bar</li>
-                                <li>The Laundry</li>
-                                <li>Maldini Dot</li>
-                                <li>Aribau</li>
-                                <li>Taiwan (Chinito)</li>
-                                <li>Mamba Club</li>
-                                <li>Nob3l Bar</li>
-                            </ul>
-                        </div>
-                        <div class="highlight-category">
-                            <h4>FIESTAS</h4>
-                            <ul class="highlight-list" id="fiestasList">
-                                <li>EUPHORIA</li>
-                                <li>Fiesta Marta</li>
-                                <li>Fiesta Curupa</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- ===================== FECHAS ===================== -->
     <section class="section fechas" id="fechas">
-        <div class="section-glow section-glow-violet"></div>
         <div class="container">
             <div class="section-header" data-animate="fade-right">
-                <span class="section-number">02</span>
+                <span class="section-number">01</span>
                 <h2 class="section-title">PRÓXIMAS FECHAS</h2>
                 <div class="section-line"></div>
             </div>
@@ -150,9 +104,41 @@
         </div>
     </section>
 
+    <!--===================== PRESSKIT ===================== -->
+    <section class="section presskit" id="presskit">
+        <div class="container">
+            <div class="section-header" data-animate="fade-right">
+                <span class="section-number">02</span>
+                <h2 class="section-title">PRESSKIT</h2>
+                <div class="section-line"></div>
+            </div>
+                <div class="presskit-highlights" data-animate="fade-left">
+                    <h3 class="presskit-highlights-title">FECHAS DESTACADAS</h3>
+                    <div class="venues-category-title">BOLICHES & BARES</div>
+                    <div class="venues-grid">
+                        <div class="venue-card"><span>Cruza Recoleta</span></div>                        
+                        <div class="venue-card">La Mala Pub</span></div>   
+                        <div class="venue-card">Behind Bar</span></div>   
+                        <div class="venue-card">The Laundry</span></div>   
+                        <div class="venue-card">Maldini Dot</span></div>   
+                        <div class="venue-card">Aribau</span></div>   
+                        <div class="venue-card">Taiwan (Chinito)</span></div>   
+                        <div class="venue-card">Mamba Club</span></div>   
+                        <div class="venue-card">Nob3l Bar</span></div>   
+                    </div>
+                    <div class="venues-category-title" style="margin-top: 24px;">SHOWS</div>
+                    <div class="venues-grid">
+                        <div class="venue-card venue-card--fiesta">EUPHORIA</div>
+                        <div class="venue-card venue-card--fiesta">Fiesta Marta</div>
+                        <div class="venue-card venue-card--fiesta">Fiesta Curupa</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- ===================== GALERÍA ===================== -->
     <section class="section galeria" id="galeria">
-        <div class="section-glow section-glow-red"></div>
         <div class="container">
             <div class="section-header" data-animate="fade-right">
                 <span class="section-number">03</span>
@@ -178,59 +164,89 @@
 
     <!-- ===================== RIDER TÉCNICO ===================== -->
     <section class="section rider" id="rider">
-        <div class="section-glow section-glow-violet"></div>
         <div class="container">
             <div class="section-header" data-animate="fade-right">
                 <span class="section-number">04</span>
                 <h2 class="section-title">RIDER TÉCNICO</h2>
                 <div class="section-line"></div>
             </div>
-            <div class="rider-content">
-                <div class="rider-option" data-animate="fade-up">
-                    <div class="rider-option-badge">OPCIÓN A</div>
-                    <div class="rider-option-card">
-                        <div class="rider-item">
-                            <div class="rider-icon"><i class="fas fa-compact-disc"></i></div>
-                            <div class="rider-info">
-                                <span class="rider-qty">2×</span>
-                                <span class="rider-name">Pioneer CDJ 3000</span>
-                                <span class="rider-alt">o similar</span>
+            <div class="rider-cta" data-animate="fade-up">
+                <p class="rider-cta-text">Hacé click para ver el rider técnico completo</p>
+                <button class="rider-cta-btn" id="openRiderBtn">
+                    <i class="fas fa-file-alt"></i> VER RIDER
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Rider Modal -->
+    <div class="rider-modal" id="riderModal">
+        <div class="rider-modal-backdrop" id="riderModalBackdrop"></div>
+        <div class="rider-modal-content">
+            <button class="rider-modal-close" id="closeRiderBtn"><i class="fas fa-times"></i></button>
+            <div class="rider-modal-grid">
+                <div class="rider-modal-option">
+                    <div class="rider-modal-badge">OPCIÓN A</div>
+                    <div class="rider-modal-option-title">Setup Profesional</div>
+                    <div class="rider-modal-items">
+                        <div class="rider-modal-item">
+                            <i class="fas fa-compact-disc"></i>
+                            <div>
+                                <strong>2× Pioneer CDJ 3000</strong>
+                                <span>o similar</span>
                             </div>
                         </div>
-                        <div class="rider-divider"></div>
-                        <div class="rider-item">
-                            <div class="rider-icon"><i class="fas fa-sliders-h"></i></div>
-                            <div class="rider-info">
-                                <span class="rider-qty">1×</span>
-                                <span class="rider-name">Mixer Pioneer DJM A9 / 900NXS</span>
-                                <span class="rider-alt">o similar</span>
+                        <div class="rider-modal-item">
+                            <i class="fas fa-sliders-h"></i>
+                            <div>
+                                <strong>Mixer Pioneer DJM A9 / 900NXS</strong>
+                                <span>o similar</span>
                             </div>
                         </div>
                     </div>
+                    <div class="rider-modal-photos">
+                        <div class="rider-modal-photo-wrap">
+                            <img src="assets/rider/rider-01.png" alt="Pioneer CDJ 3000" class="rider-modal-img" data-zoom="assets/rider/rider-01.png">
+                            <button class="rider-photo-zoom" data-zoom="assets/rider/rider-01.png"><i class="fas fa-expand"></i></button>
+                        </div>
+                        <div class="rider-modal-photo-wrap">
+                            <img src="assets/rider/rider-02.png" alt="Mixer Pioneer DJM" class="rider-modal-img" data-zoom="assets/rider/rider-02.png">
+                            <button class="rider-photo-zoom" data-zoom="assets/rider/rider-02.png"><i class="fas fa-expand"></i></button>
+                        </div>
+                    </div>
                 </div>
-                <div class="rider-separator" data-animate="fade-up">
-                    <span>O</span>
-                </div>
-                <div class="rider-option" data-animate="fade-up">
-                    <div class="rider-option-badge">OPCIÓN B</div>
-                    <div class="rider-option-card">
-                        <div class="rider-item">
-                            <div class="rider-icon"><i class="fas fa-music"></i></div>
-                            <div class="rider-info">
-                                <span class="rider-qty">1×</span>
-                                <span class="rider-name">Pioneer XDJ RX3 / RX2</span>
-                                <span class="rider-alt"></span>
+                <div class="rider-modal-divider">O</div>
+                <div class="rider-modal-option">
+                    <div class="rider-modal-badge">OPCIÓN B</div>
+                    <div class="rider-modal-option-title">Setup Compacto</div>
+                    <div class="rider-modal-items">
+                        <div class="rider-modal-item">
+                            <i class="fas fa-music"></i>
+                            <div>
+                                <strong>Pioneer XDJ RX3 / RX2</strong>
                             </div>
+                        </div>
+                    </div>
+                    <div class="rider-modal-photos">
+                        <div class="rider-modal-photo-wrap rider-modal-photo-wrap--full">
+                            <img src="assets/rider/rider-03.png" alt="Pioneer XDJ RX3" class="rider-modal-img" data-zoom="assets/rider/rider-03.png">
+                            <button class="rider-photo-zoom" data-zoom="assets/rider/rider-03.png"><i class="fas fa-expand"></i></button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+
+    <!-- Rider zoom overlay -->
+    <div class="rider-zoom-overlay" id="riderZoomOverlay">
+        <div class="rider-zoom-backdrop" id="riderZoomBackdrop"></div>
+        <img src="" alt="Rider zoom" class="rider-zoom-img" id="riderZoomImg">
+        <button class="rider-zoom-close" id="riderZoomClose"><i class="fas fa-times"></i></button>
+    </div>
 
     <!-- ===================== CONTACTO ===================== -->
     <section class="section contacto" id="contacto">
-        <div class="section-glow section-glow-red"></div>
         <div class="container">
             <div class="section-header" data-animate="fade-right">
                 <span class="section-number">05</span>
@@ -269,7 +285,7 @@
     <!-- ===================== FOOTER ===================== -->
     <footer class="footer">
         <div class="footer-content">
-            <span class="footer-name">NACHO IGNA</span>
+            <img src="assets/logo-nachoigna.png" alt="Nacho Igna" class="footer-logo-img">
             <div class="footer-social">
                 <a href="#" class="footer-social-link" id="footerInstagram" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
                 <a href="#" class="footer-social-link" id="footerYoutube" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
