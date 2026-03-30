@@ -75,6 +75,23 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+
+body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background-image: url('../assets/logo-nachoigna.PNG');
+    background-repeat: repeat;
+    background-size: 300px auto; /* Podés modificar este valor para agrandar o achicar el logo */
+    opacity: 0.03; /* Opacidad baja para que sea una marca de agua sutil y no moleste la lectura */
+    transform: rotate(-25deg); /* Le da la inclinación diagonal */
+    pointer-events: none; /* Evita que el logo interfiera si el usuario hace click */
+    z-index: -1; /* Lo manda al fondo de todo. Como tu sección .hero tiene fondo propio, tapará esta marca de agua ahí arriba. */
+}
+
 a {
     text-decoration: none;
     color: inherit;
