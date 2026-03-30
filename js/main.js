@@ -1,12 +1,16 @@
 /* ==========================================
    NACHO IGNA - Main JavaScript
+   Reads data from Firebase Firestore
    ========================================== */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     'use strict';
 
-    // ===================== CONFIG =====================
-    // Default social links - Nacho can update these in admin
+    // ===================== FIREBASE INIT =====================
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // ===================== DEFAULT CONFIG =====================
     const DEFAULT_CONFIG = {
         instagram: 'https://www.instagram.com/nachoignaa/',
         youtube: 'https://www.youtube.com/channel/UCLgStMWiK7lfUWBo0Eq337g',
@@ -15,66 +19,80 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ===================== DATA LOADING =====================
-    function loadConfig() {
+    async function loadConfig() {
         try {
-            const saved = localStorage.getItem('nachoigna_config');
-            return saved ? { ...DEFAULT_CONFIG, ...JSON.parse(saved) } : DEFAULT_CONFIG;
-        } catch {
-            return DEFAULT_CONFIG;
+            const doc = await db.collection('config').doc('main').get();
+            if (doc.exists) {
+                return { ...DEFAULT_CONFIG, ...doc.data() };
+            }
+        } catch (err) {
+            console.error('Error cargando config:', err);
         }
+        return DEFAULT_CONFIG;
     }
 
-    function loadFechas() {
-    return [
-        { id: '1', date: '2026-04-03', name: 'CRUZA RECOLETA', location: 'Buenos Aires' },
-        { id: '2', date: '2026-04-04', name: 'LA MALA PUB', location: 'Buenos Aires' },
-        { id: '3', date: '2026-04-05', name: 'MALDINI DOT', location: 'Buenos Aires' },
-    ];
-}
-
-
-    /*function loadFechas() {
+    async function loadFechas() {
         try {
-            const saved = localStorage.getItem('nachoigna_fechas');
-            if (saved) {
-                const fechas = JSON.parse(saved);
-                // Filter future dates and sort
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                return fechas
-                    .filter(f => new Date(f.date) >= today)
-                    .sort((a, b) => new Date(a.date) - new Date(b.date));
-            }
-            return [];
-        } catch {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayStr = today.toISOString().split('T')[0];
+
+            const snapshot = await db.collection('fechas')
+                .where('date', '>=', todayStr)
+                .orderBy('date', 'asc')
+                .get();
+
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch (err) {
+            console.error('Error cargando fechas:', err);
             return [];
         }
     }
-        */
 
-    function loadGallery() {
+    async function loadGallery() {
         try {
-            const saved = localStorage.getItem('nachoigna_gallery');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                if (parsed.length > 0) return parsed;
-            }
-        } catch {}
-        // Fotos por defecto desde assets/gallery/
-        return [
-            { id: '1', src: 'assets/gallery/foto-01.jpg', alt: 'Show' },
-            { id: '2', src: 'assets/gallery/foto-02.jpg', alt: 'Show' },
-            { id: '3', src: 'assets/gallery/foto-03.jpg', alt: 'Show' },
-            { id: '4', src: 'assets/gallery/foto-04.jpg', alt: 'Show' },
-            { id: '5', src: 'assets/gallery/foto-05.jpg', alt: 'Show' },
-            { id: '6', src: 'assets/gallery/foto-06.jpg', alt: 'Show' },
-        ];
+            const snapshot = await db.collection('gallery')
+                .orderBy('order', 'asc')
+                .get();
+            const photos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            return photos.length > 0 ? photos : [];
+        } catch {
+            return [];
+        }
     }
+
+    async function loadVenues() {
+        try {
+            const snapshot = await db.collection('venues')
+                .orderBy('order', 'asc')
+                .get();
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch {
+            return [];
+        }
+    }
+
+    async function loadHeroImages() {
+        try {
+            const snapshot = await db.collection('heroImages')
+                .orderBy('order', 'asc')
+                .get();
+            return snapshot.docs.map(doc => doc.data().src);
+        } catch {
+            return [];
+        }
+    }
+
+    // ===================== LOAD ALL DATA =====================
+    const [config, fechas, gallery, venuesList, heroImageUrls] = await Promise.all([
+        loadConfig(),
+        loadFechas(),
+        loadGallery(),
+        loadVenues(),
+        loadHeroImages(),
+    ]);
 
     // ===================== APPLY CONFIG =====================
-    const config = loadConfig();
-
-    // Social links - apply to all instances
     function setSocialLinks() {
         const mappings = [
             { ids: ['heroInstagram', 'contactInstagram', 'footerInstagram', 'mobileInstagram'], url: config.instagram },
@@ -92,45 +110,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     setSocialLinks();
 
-    // Hero description
-    const heroDesc = document.getElementById('heroDescription');
-    if (heroDesc && config.heroDescription) {
-        heroDesc.textContent = config.heroDescription;
-    }
-
-    // Presskit bio
-    const presskitBio = document.getElementById('presskitBio');
-    if (presskitBio && config.presskitBio) {
-        presskitBio.textContent = config.presskitBio;
-    }
-
     // ===================== HERO BACKGROUND SLIDESHOW =====================
     const slides = document.querySelectorAll('.hero-bg-slide');
     let currentSlide = 0;
 
-    // Check if admin uploaded hero images
-    const heroImages = (() => {
-    const saved = (() => {
-        try {
-            const s = localStorage.getItem('nachoigna_heroImages');
-            return s ? JSON.parse(s) : [];
-        } catch { return []; }
-    })();
-    if (saved.length > 0) return saved;
-    // Fotos por defecto desde assets/
-    return [
-        'assets/hero-01.jpeg',
-        'assets/hero-02.JPEG',
-        'assets/hero-03.JPEG',
-        'assets/hero-04.JPEG'
-    ];
-    })();
-    if (heroImages.length > 0) {
-        // Replace gradient slides with actual images
+    if (heroImageUrls.length > 0) {
         slides.forEach((slide, i) => {
-            if (heroImages[i % heroImages.length]) {
+            if (heroImageUrls[i % heroImageUrls.length]) {
                 slide.style.background = 'none';
-                slide.style.backgroundImage = `url(${heroImages[i % heroImages.length]})`;
+                slide.style.backgroundImage = `url(${heroImageUrls[i % heroImageUrls.length]})`;
                 slide.style.backgroundSize = 'cover';
                 slide.style.backgroundPosition = 'center';
             }
@@ -174,7 +162,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, (duration + 4) * 1000);
     }
 
-    // Throttle particle creation
     setInterval(() => {
         if (particlesContainer.children.length < 20) {
             createParticle();
@@ -188,22 +175,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const navLinks = document.querySelectorAll('.nav-link');
     const mobileLinks = document.querySelectorAll('.mobile-link');
 
-    // Scroll effect on nav
-    let lastScroll = 0;
     window.addEventListener('scroll', () => {
-        const scrollY = window.scrollY;
-        nav.classList.toggle('scrolled', scrollY > 80);
-        lastScroll = scrollY;
+        nav.classList.toggle('scrolled', window.scrollY > 80);
     }, { passive: true });
 
-    // Hamburger toggle
     hamburger.addEventListener('click', () => {
         hamburger.classList.toggle('active');
         mobileMenu.classList.toggle('active');
         document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
     });
 
-    // Close mobile menu on link click
     mobileLinks.forEach(link => {
         link.addEventListener('click', () => {
             hamburger.classList.remove('active');
@@ -252,10 +233,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     animateElements.forEach(el => observer.observe(el));
 
+    // ===================== SECURITY HELPERS =====================
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.appendChild(document.createTextNode(text || ''));
+        return div.innerHTML;
+    }
+
     // ===================== FECHAS =====================
     const fechasList = document.getElementById('fechasList');
     const fechasEmpty = document.getElementById('fechasEmpty');
-    const fechas = loadFechas();
 
     function formatDate(dateStr) {
         const d = new Date(dateStr + 'T00:00:00');
@@ -281,7 +268,6 @@ document.addEventListener('DOMContentLoaded', () => {
             item.setAttribute('data-animate', 'fade-up');
             item.style.transitionDelay = `${i * 0.08}s`;
 
-            // Sanitize output
             const safeName = escapeHtml(fecha.name);
             const safeLocation = escapeHtml(fecha.location);
 
@@ -298,10 +284,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderFechas();
 
+    // ===================== VENUES =====================
+    function renderVenues() {
+        const baresGrid = document.getElementById('venuesBaresGrid');
+        const showsGrid = document.getElementById('venuesShowsGrid');
+        if (!baresGrid || !showsGrid) return;
+
+        const bares = venuesList.filter(v => v.category === 'bares');
+        const shows = venuesList.filter(v => v.category === 'shows');
+
+        baresGrid.innerHTML = bares.map(v =>
+            `<div class="venue-card"><span>${escapeHtml(v.name)}</span></div>`
+        ).join('');
+
+        showsGrid.innerHTML = shows.map(v =>
+            `<div class="venue-card venue-card--fiesta"><span>${escapeHtml(v.name)}</span></div>`
+        ).join('');
+    }
+
+    renderVenues();
+
     // ===================== GALLERY =====================
     const galeriaGrid = document.getElementById('galeriaGrid');
     const galeriaEmpty = document.getElementById('galeriaEmpty');
-    const gallery = loadGallery();
     let lightboxIndex = 0;
 
     function renderGallery() {
@@ -388,13 +393,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ===================== SECURITY HELPERS =====================
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.appendChild(document.createTextNode(text));
-        return div.innerHTML;
-    }
-
     // ===================== RIDER MODAL =====================
     const openRiderBtn = document.getElementById('openRiderBtn');
     const closeRiderBtn = document.getElementById('closeRiderBtn');
@@ -426,7 +424,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (riderZoomClose) riderZoomClose.addEventListener('click', closeZoom);
     if (riderZoomBackdrop) riderZoomBackdrop.addEventListener('click', closeZoom);
 
-    // Zoom buttons — delegación de eventos
     document.addEventListener('click', (e) => {
         const btn = e.target.closest('.rider-photo-zoom');
         if (!btn) return;

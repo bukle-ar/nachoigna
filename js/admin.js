@@ -1,36 +1,20 @@
 /* ==========================================
    NACHO IGNA - Admin Panel JavaScript
+   Firebase Auth + Firestore + Cloudinary
    ========================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
     'use strict';
 
-    // ===================== SECURITY =====================
-    // Simple hash for password storage (not production-grade crypto,
-    // but sufficient for client-side-only admin)
-    async function hashPassword(password) {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(password + '_nachoigna_salt_2026');
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    // Default password: "nacho2026" — Nacho should change this immediately
-    const DEFAULT_HASH = null; // Will be set on first use
-
-    async function getStoredHash() {
-        const stored = localStorage.getItem('nachoigna_adminHash');
-        if (stored) return stored;
-        // Set default password on first access
-        const defaultHash = await hashPassword('nacho2026');
-        localStorage.setItem('nachoigna_adminHash', defaultHash);
-        return defaultHash;
-    }
+    // ===================== FIREBASE INIT =====================
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
     // ===================== DOM REFS =====================
     const loginScreen = document.getElementById('loginScreen');
     const adminPanel = document.getElementById('adminPanel');
+    const loginEmail = document.getElementById('loginEmail');
     const loginPassword = document.getElementById('loginPassword');
     const loginBtn = document.getElementById('loginBtn');
     const loginError = document.getElementById('loginError');
@@ -50,16 +34,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let confirmCallback = null;
 
-    // ===================== LOGIN =====================
-    // Check session
-    const isLoggedIn = sessionStorage.getItem('nachoigna_auth') === 'true';
-    if (isLoggedIn) {
-        showAdmin();
-    }
+    // ===================== AUTH =====================
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            showAdmin();
+        } else {
+            loginScreen.style.display = 'flex';
+            adminPanel.style.display = 'none';
+        }
+    });
 
     loginBtn.addEventListener('click', handleLogin);
     loginPassword.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') handleLogin();
+    });
+    loginEmail.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') loginPassword.focus();
     });
 
     togglePass.addEventListener('click', () => {
@@ -69,23 +59,34 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     async function handleLogin() {
+        const email = loginEmail.value.trim();
         const password = loginPassword.value.trim();
-        if (!password) {
-            loginError.textContent = 'Ingresá la contraseña';
+
+        if (!email || !password) {
+            loginError.textContent = 'Completá email y contraseña';
             return;
         }
 
-        const hash = await hashPassword(password);
-        const storedHash = await getStoredHash();
+        loginBtn.disabled = true;
+        loginBtn.textContent = 'INGRESANDO...';
 
-        if (hash === storedHash) {
-            sessionStorage.setItem('nachoigna_auth', 'true');
+        try {
+            await auth.signInWithEmailAndPassword(email, password);
             loginError.textContent = '';
-            showAdmin();
-        } else {
-            loginError.textContent = 'Contraseña incorrecta';
+        } catch (error) {
+            const messages = {
+                'auth/user-not-found': 'Usuario no encontrado',
+                'auth/wrong-password': 'Contraseña incorrecta',
+                'auth/invalid-email': 'Email inválido',
+                'auth/too-many-requests': 'Demasiados intentos. Esperá un momento.',
+                'auth/invalid-credential': 'Credenciales inválidas',
+            };
+            loginError.textContent = messages[error.code] || 'Error de autenticación';
             loginPassword.value = '';
             loginPassword.focus();
+        } finally {
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'INGRESAR';
         }
     }
 
@@ -100,9 +101,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('logoutBtnMobile').addEventListener('click', logout);
 
     function logout() {
-        sessionStorage.removeItem('nachoigna_auth');
-        location.reload();
+        auth.signOut().then(() => location.reload());
     }
+
+    // Reset password
+    document.getElementById('resetPassBtn').addEventListener('click', async () => {
+        const user = auth.currentUser;
+        if (!user) return;
+        try {
+            await auth.sendPasswordResetEmail(user.email);
+            showToast('Email de reset enviado a ' + user.email);
+        } catch {
+            showToast('Error al enviar email', 'error');
+        }
+    });
 
     // ===================== SIDEBAR / TABS =====================
     sidebarLinks.forEach(link => {
@@ -112,13 +124,11 @@ document.addEventListener('DOMContentLoaded', () => {
             link.classList.add('active');
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById(`tab-${tab}`).classList.add('active');
-            // Close mobile sidebar
             sidebar.classList.remove('open');
             removeSidebarBackdrop();
         });
     });
 
-    // Mobile sidebar toggle
     if (sidebarToggle) {
         sidebarToggle.addEventListener('click', () => {
             sidebar.classList.toggle('open');
@@ -173,18 +183,31 @@ document.addEventListener('DOMContentLoaded', () => {
         confirmCallback = null;
     });
 
-    // ===================== DATA HELPERS =====================
+    // ===================== HELPERS =====================
     function escapeHtml(text) {
         const div = document.createElement('div');
         div.appendChild(document.createTextNode(text || ''));
         return div.innerHTML;
     }
 
-    function generateId() {
-        return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    // ===================== CLOUDINARY UPLOAD =====================
+    async function uploadToCloudinary(file, folder = 'gallery') {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+        formData.append('folder', `nachoigna/${folder}`);
+
+        const response = await fetch(
+            `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+            { method: 'POST', body: formData }
+        );
+
+        if (!response.ok) throw new Error('Upload failed');
+        const data = await response.json();
+        return data.secure_url;
     }
 
-    // ===================== FECHAS MANAGEMENT =====================
+    // ===================== FECHAS =====================
     let fechas = [];
     const fechaForm = document.getElementById('fechaForm');
     const fechaFormTitle = document.getElementById('fechaFormTitle');
@@ -198,32 +221,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const fechasAdminList = document.getElementById('fechasAdminList');
     const fechasAdminEmpty = document.getElementById('fechasAdminEmpty');
 
-    function loadFechas() {
+    async function loadFechas() {
         try {
-            fechas = JSON.parse(localStorage.getItem('nachoigna_fechas') || '[]');
-        } catch {
+            const snapshot = await db.collection('fechas')
+                .orderBy('date', 'asc')
+                .get();
+            fechas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch (err) {
+            console.error('Error cargando fechas:', err);
             fechas = [];
         }
         renderFechasAdmin();
     }
 
-    function saveFechas() {
-        localStorage.setItem('nachoigna_fechas', JSON.stringify(fechas));
-    }
-
     function renderFechasAdmin() {
         const sorted = [...fechas].sort((a, b) => new Date(a.date) - new Date(b.date));
 
+        document.querySelectorAll('#fechasAdminList .data-item').forEach(el => el.remove());
+
         if (sorted.length === 0) {
             fechasAdminEmpty.style.display = 'block';
-            // Clear only data items, keep the empty state
-            document.querySelectorAll('#fechasAdminList .data-item').forEach(el => el.remove());
             return;
         }
 
         fechasAdminEmpty.style.display = 'none';
-        // Clear previous items
-        document.querySelectorAll('#fechasAdminList .data-item').forEach(el => el.remove());
 
         sorted.forEach(f => {
             const d = new Date(f.date + 'T00:00:00');
@@ -245,16 +266,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
             item.querySelector('.edit-btn').addEventListener('click', () => editFecha(f.id));
             item.querySelector('.delete-btn').addEventListener('click', () => {
-                showConfirm('¿Eliminar esta fecha?', () => {
-                    fechas = fechas.filter(x => x.id !== f.id);
-                    saveFechas();
-                    renderFechasAdmin();
-                    showToast('Fecha eliminada');
-                });
+                showConfirm('¿Eliminar esta fecha?', () => deleteFecha(f.id));
             });
 
             fechasAdminList.appendChild(item);
         });
+    }
+
+    async function deleteFecha(id) {
+        try {
+            await db.collection('fechas').doc(id).delete();
+            await loadFechas();
+            showToast('Fecha eliminada');
+        } catch (err) {
+            console.error('Error eliminando fecha:', err);
+            showToast('Error al eliminar', 'error');
+        }
     }
 
     addFechaBtn.addEventListener('click', () => {
@@ -271,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fechaForm.style.display = 'none';
     });
 
-    saveFechaBtn.addEventListener('click', () => {
+    saveFechaBtn.addEventListener('click', async () => {
         const date = fechaDate.value;
         const name = fechaName.value.trim();
         const location = fechaLocation.value.trim();
@@ -282,28 +309,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const editId = fechaEditId.value;
+        saveFechaBtn.disabled = true;
 
-        if (editId) {
-            // Edit existing
-            const idx = fechas.findIndex(f => f.id === editId);
-            if (idx !== -1) {
-                fechas[idx] = { ...fechas[idx], date, name, location };
+        try {
+            if (editId) {
+                await db.collection('fechas').doc(editId).update({ date, name, location });
+            } else {
+                await db.collection('fechas').add({
+                    date,
+                    name,
+                    location,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                });
             }
-        } else {
-            // Add new
-            fechas.push({ id: generateId(), date, name, location });
+            await loadFechas();
+            fechaForm.style.display = 'none';
+            showToast(editId ? 'Fecha actualizada' : 'Fecha agregada');
+        } catch (err) {
+            console.error('Error guardando fecha:', err);
+            showToast('Error al guardar', 'error');
         }
 
-        saveFechas();
-        renderFechasAdmin();
-        fechaForm.style.display = 'none';
-        showToast(editId ? 'Fecha actualizada' : 'Fecha agregada');
+        saveFechaBtn.disabled = false;
     });
 
     function editFecha(id) {
         const f = fechas.find(x => x.id === id);
         if (!f) return;
-
         fechaFormTitle.textContent = 'Editar Fecha';
         fechaEditId.value = f.id;
         fechaDate.value = f.date;
@@ -313,31 +345,184 @@ document.addEventListener('DOMContentLoaded', () => {
         fechaDate.focus();
     }
 
-    // ===================== GALLERY MANAGEMENT =====================
+    // ===================== VENUES (Presskit) =====================
+    let venues = [];
+
+    async function loadVenues() {
+        try {
+            const snapshot = await db.collection('venues')
+                .orderBy('order', 'asc')
+                .get();
+            venues = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch (err) {
+            console.error('Error cargando venues:', err);
+            venues = [];
+        }
+        renderVenuesAdmin();
+    }
+
+    function renderVenuesAdmin() {
+        const baresList = document.getElementById('venuesBaresList');
+        const showsList = document.getElementById('venuesShowsList');
+        baresList.innerHTML = '';
+        showsList.innerHTML = '';
+
+        const bares = venues.filter(v => v.category === 'bares');
+        const shows = venues.filter(v => v.category === 'shows');
+
+        renderVenueCategory(bares, baresList);
+        renderVenueCategory(shows, showsList);
+    }
+
+    function renderVenueCategory(items, container) {
+        if (items.length === 0) {
+            container.innerHTML = '<p class="empty-state">Sin venues cargados</p>';
+            return;
+        }
+
+        items.forEach((v, index) => {
+            const item = document.createElement('div');
+            item.className = 'data-item';
+            item.innerHTML = `
+                <div class="data-item-info">
+                    <span class="data-item-name">${escapeHtml(v.name)}</span>
+                </div>
+                <div class="data-item-actions">
+                    <button class="move-up-btn" title="Subir"><i class="fas fa-arrow-up"></i></button>
+                    <button class="move-down-btn" title="Bajar"><i class="fas fa-arrow-down"></i></button>
+                    <button class="edit-btn" title="Editar"><i class="fas fa-pen"></i></button>
+                    <button class="delete-btn" title="Eliminar"><i class="fas fa-trash"></i></button>
+                </div>
+            `;
+
+            item.querySelector('.move-up-btn').addEventListener('click', () => moveVenue(v.id, v.category, -1));
+            item.querySelector('.move-down-btn').addEventListener('click', () => moveVenue(v.id, v.category, 1));
+            item.querySelector('.edit-btn').addEventListener('click', () => editVenue(v.id));
+            item.querySelector('.delete-btn').addEventListener('click', () => {
+                showConfirm('¿Eliminar este venue?', () => deleteVenue(v.id));
+            });
+
+            container.appendChild(item);
+        });
+    }
+
+    async function moveVenue(id, category, direction) {
+        const filtered = venues.filter(v => v.category === category);
+        const idx = filtered.findIndex(v => v.id === id);
+        const newIdx = idx + direction;
+
+        if (newIdx < 0 || newIdx >= filtered.length) return;
+
+        const batch = db.batch();
+        batch.update(db.collection('venues').doc(filtered[idx].id), { order: filtered[newIdx].order });
+        batch.update(db.collection('venues').doc(filtered[newIdx].id), { order: filtered[idx].order });
+
+        try {
+            await batch.commit();
+            await loadVenues();
+        } catch (err) {
+            showToast('Error al reordenar', 'error');
+        }
+    }
+
+    async function deleteVenue(id) {
+        try {
+            await db.collection('venues').doc(id).delete();
+            await loadVenues();
+            showToast('Venue eliminado');
+        } catch {
+            showToast('Error al eliminar', 'error');
+        }
+    }
+
+    function editVenue(id) {
+        const v = venues.find(x => x.id === id);
+        if (!v) return;
+        document.getElementById('venueFormTitle').textContent = 'Editar Venue';
+        document.getElementById('venueName').value = v.name;
+        document.getElementById('venueEditId').value = v.id;
+        document.getElementById('venueCategory').value = v.category;
+        document.getElementById('venueForm').style.display = 'block';
+        document.getElementById('venueName').focus();
+    }
+
+    document.getElementById('addVenueBarBtn').addEventListener('click', () => {
+        document.getElementById('venueFormTitle').textContent = 'Nuevo Boliche / Bar';
+        document.getElementById('venueName').value = '';
+        document.getElementById('venueEditId').value = '';
+        document.getElementById('venueCategory').value = 'bares';
+        document.getElementById('venueForm').style.display = 'block';
+        document.getElementById('venueName').focus();
+    });
+
+    document.getElementById('addVenueShowBtn').addEventListener('click', () => {
+        document.getElementById('venueFormTitle').textContent = 'Nuevo Show / Fiesta';
+        document.getElementById('venueName').value = '';
+        document.getElementById('venueEditId').value = '';
+        document.getElementById('venueCategory').value = 'shows';
+        document.getElementById('venueForm').style.display = 'block';
+        document.getElementById('venueName').focus();
+    });
+
+    document.getElementById('cancelVenueBtn').addEventListener('click', () => {
+        document.getElementById('venueForm').style.display = 'none';
+    });
+
+    document.getElementById('saveVenueBtn').addEventListener('click', async () => {
+        const name = document.getElementById('venueName').value.trim();
+        if (!name) {
+            showToast('Ingresá un nombre', 'error');
+            return;
+        }
+
+        const editId = document.getElementById('venueEditId').value;
+        const category = document.getElementById('venueCategory').value;
+        const btn = document.getElementById('saveVenueBtn');
+        btn.disabled = true;
+
+        try {
+            if (editId) {
+                await db.collection('venues').doc(editId).update({ name });
+            } else {
+                const maxOrder = venues
+                    .filter(v => v.category === category)
+                    .reduce((max, v) => Math.max(max, v.order || 0), 0);
+
+                await db.collection('venues').add({
+                    name,
+                    category,
+                    order: maxOrder + 1,
+                });
+            }
+            await loadVenues();
+            document.getElementById('venueForm').style.display = 'none';
+            showToast(editId ? 'Venue actualizado' : 'Venue agregado');
+        } catch (err) {
+            showToast('Error al guardar', 'error');
+        }
+
+        btn.disabled = false;
+    });
+
+    // ===================== GALLERY =====================
     let gallery = [];
     const galleryUpload = document.getElementById('galleryUpload');
     const galleryAdminGrid = document.getElementById('galleryAdminGrid');
     const galleryAdminEmpty = document.getElementById('galleryAdminEmpty');
 
-    function loadGallery() {
+    async function loadGallery() {
         try {
-            gallery = JSON.parse(localStorage.getItem('nachoigna_gallery') || '[]');
+            const snapshot = await db.collection('gallery')
+                .orderBy('order', 'asc')
+                .get();
+            gallery = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         } catch {
             gallery = [];
         }
         renderGalleryAdmin();
     }
 
-    function saveGallery() {
-        try {
-            localStorage.setItem('nachoigna_gallery', JSON.stringify(gallery));
-        } catch (e) {
-            showToast('Error: almacenamiento lleno. Eliminá algunas fotos.', 'error');
-        }
-    }
-
     function renderGalleryAdmin() {
-        // Clear items
         document.querySelectorAll('#galleryAdminGrid .gallery-admin-item').forEach(el => el.remove());
 
         if (gallery.length === 0) {
@@ -347,7 +532,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         galleryAdminEmpty.style.display = 'none';
 
-        gallery.forEach((photo, i) => {
+        gallery.forEach((photo) => {
             const item = document.createElement('div');
             item.className = 'gallery-admin-item';
 
@@ -362,11 +547,14 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.innerHTML = '<i class="fas fa-trash"></i>';
             btn.title = 'Eliminar foto';
             btn.addEventListener('click', () => {
-                showConfirm('¿Eliminar esta foto?', () => {
-                    gallery.splice(i, 1);
-                    saveGallery();
-                    renderGalleryAdmin();
-                    showToast('Foto eliminada');
+                showConfirm('¿Eliminar esta foto?', async () => {
+                    try {
+                        await db.collection('gallery').doc(photo.id).delete();
+                        await loadGallery();
+                        showToast('Foto eliminada');
+                    } catch {
+                        showToast('Error al eliminar', 'error');
+                    }
                 });
             });
 
@@ -381,68 +569,104 @@ document.addEventListener('DOMContentLoaded', () => {
         const files = Array.from(e.target.files);
         if (files.length === 0) return;
 
+        showToast('Subiendo fotos... puede tardar unos segundos');
+        let uploaded = 0;
+
         for (const file of files) {
             if (!file.type.startsWith('image/')) continue;
-
-            // Resize to reduce storage
             try {
-                const dataUrl = await resizeImage(file, 1200, 0.8);
-                gallery.push({
-                    id: generateId(),
-                    src: dataUrl,
-                    alt: file.name.replace(/\.[^/.]+$/, '')
+                const url = await uploadToCloudinary(file, 'gallery');
+                const maxOrder = gallery.reduce((max, p) => Math.max(max, p.order || 0), 0);
+
+                await db.collection('gallery').add({
+                    src: url,
+                    alt: file.name.replace(/\.[^/.]+$/, ''),
+                    order: maxOrder + 1 + uploaded,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 });
+                uploaded++;
             } catch (err) {
-                console.error('Error processing image:', err);
+                console.error('Error subiendo imagen:', err);
+                showToast('Error al subir ' + file.name, 'error');
             }
         }
 
-        saveGallery();
-        renderGalleryAdmin();
-        showToast(`${files.length} foto(s) subida(s)`);
+        await loadGallery();
+        if (uploaded > 0) showToast(`${uploaded} foto(s) subida(s)`);
         galleryUpload.value = '';
     });
 
-    function resizeImage(file, maxWidth, quality) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let w = img.width;
-                    let h = img.height;
+    // ===================== HERO IMAGES =====================
+    let heroImages = [];
+    const heroUpload = document.getElementById('heroUpload');
+    const heroPreviewRow = document.getElementById('heroPreviewRow');
 
-                    if (w > maxWidth) {
-                        h = (h / w) * maxWidth;
-                        w = maxWidth;
-                    }
+    async function loadHeroImages() {
+        try {
+            const snapshot = await db.collection('heroImages')
+                .orderBy('order', 'asc')
+                .get();
+            heroImages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch {
+            heroImages = [];
+        }
+        renderHeroPreview();
+    }
 
-                    canvas.width = w;
-                    canvas.height = h;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, w, h);
-                    resolve(canvas.toDataURL('image/jpeg', quality));
-                };
-                img.onerror = reject;
-                img.src = e.target.result;
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
+    function renderHeroPreview() {
+        heroPreviewRow.innerHTML = '';
+        heroImages.forEach((img) => {
+            const item = document.createElement('div');
+            item.className = 'hero-preview-item';
+            item.innerHTML = `
+                <img src="${img.src}" alt="Hero">
+                <button class="hero-delete" title="Eliminar"><i class="fas fa-times"></i></button>
+            `;
+            item.querySelector('.hero-delete').addEventListener('click', async () => {
+                try {
+                    await db.collection('heroImages').doc(img.id).delete();
+                    await loadHeroImages();
+                    showToast('Foto eliminada');
+                } catch {
+                    showToast('Error al eliminar', 'error');
+                }
+            });
+            heroPreviewRow.appendChild(item);
         });
     }
 
-    // ===================== PRESSKIT MANAGEMENT =====================
+    heroUpload.addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files);
+        for (const file of files) {
+            if (!file.type.startsWith('image/') || heroImages.length >= 4) continue;
+            try {
+                showToast('Subiendo foto del hero...');
+                const url = await uploadToCloudinary(file, 'hero');
+                await db.collection('heroImages').add({
+                    src: url,
+                    order: heroImages.length + 1,
+                });
+            } catch (err) {
+                console.error(err);
+                showToast('Error al subir', 'error');
+            }
+        }
+        await loadHeroImages();
+        showToast('Fotos del hero actualizadas');
+        heroUpload.value = '';
+    });
+
+    // ===================== PRESSKIT / BIOGRAFÍA =====================
     const presskitTextarea = document.getElementById('presskitTextarea');
     const presskitCharCount = document.getElementById('presskitCharCount');
     const savePresskitBtn = document.getElementById('savePresskitBtn');
 
-    function loadPresskit() {
+    async function loadPresskit() {
         try {
-            const config = JSON.parse(localStorage.getItem('nachoigna_config') || '{}');
-            if (config.presskitBio) {
-                presskitTextarea.value = config.presskitBio;
-                presskitCharCount.textContent = config.presskitBio.length;
+            const doc = await db.collection('config').doc('main').get();
+            if (doc.exists && doc.data().presskitBio) {
+                presskitTextarea.value = doc.data().presskitBio;
+                presskitCharCount.textContent = doc.data().presskitBio.length;
             }
         } catch {}
     }
@@ -451,134 +675,77 @@ document.addEventListener('DOMContentLoaded', () => {
         presskitCharCount.textContent = presskitTextarea.value.length;
     });
 
-    savePresskitBtn.addEventListener('click', () => {
+    savePresskitBtn.addEventListener('click', async () => {
         const bio = presskitTextarea.value.trim();
         if (!bio) {
             showToast('La biografía no puede estar vacía', 'error');
             return;
         }
-
-        const config = JSON.parse(localStorage.getItem('nachoigna_config') || '{}');
-        config.presskitBio = bio;
-        localStorage.setItem('nachoigna_config', JSON.stringify(config));
-        showToast('Biografía guardada');
+        savePresskitBtn.disabled = true;
+        try {
+            await db.collection('config').doc('main').set(
+                { presskitBio: bio },
+                { merge: true }
+            );
+            showToast('Biografía guardada');
+        } catch {
+            showToast('Error al guardar', 'error');
+        }
+        savePresskitBtn.disabled = false;
     });
 
-    // ===================== CONFIG MANAGEMENT =====================
+    // ===================== CONFIG (Redes Sociales) =====================
     const cfgInstagram = document.getElementById('cfgInstagram');
     const cfgYoutube = document.getElementById('cfgYoutube');
     const cfgSpotify = document.getElementById('cfgSpotify');
     const cfgWhatsapp = document.getElementById('cfgWhatsapp');
-    const cfgHeroDesc = document.getElementById('cfgHeroDesc');
     const saveConfigBtn = document.getElementById('saveConfigBtn');
-    const changePassBtn = document.getElementById('changePassBtn');
-    const cfgNewPass = document.getElementById('cfgNewPass');
-    const cfgConfirmPass = document.getElementById('cfgConfirmPass');
 
-    // Hero images
-    const heroUpload = document.getElementById('heroUpload');
-    const heroPreviewRow = document.getElementById('heroPreviewRow');
-    let heroImages = [];
-
-    function loadConfig() {
+    async function loadConfig() {
         try {
-            const config = JSON.parse(localStorage.getItem('nachoigna_config') || '{}');
-            cfgInstagram.value = config.instagram || '';
-            cfgYoutube.value = config.youtube || '';
-            cfgSpotify.value = config.spotify || '';
-            cfgWhatsapp.value = config.whatsapp || '';
-            cfgHeroDesc.value = config.heroDescription || '';
-        } catch {}
-
-        // Hero images
-        try {
-            heroImages = JSON.parse(localStorage.getItem('nachoigna_heroImages') || '[]');
-        } catch {
-            heroImages = [];
-        }
-        renderHeroPreview();
-    }
-
-    saveConfigBtn.addEventListener('click', () => {
-        const config = JSON.parse(localStorage.getItem('nachoigna_config') || '{}');
-        config.instagram = cfgInstagram.value.trim();
-        config.youtube = cfgYoutube.value.trim();
-        config.spotify = cfgSpotify.value.trim();
-        config.whatsapp = cfgWhatsapp.value.trim();
-        config.heroDescription = cfgHeroDesc.value.trim();
-        localStorage.setItem('nachoigna_config', JSON.stringify(config));
-        showToast('Configuración guardada');
-    });
-
-    changePassBtn.addEventListener('click', async () => {
-        const newPass = cfgNewPass.value;
-        const confirmPass = cfgConfirmPass.value;
-
-        if (!newPass || newPass.length < 4) {
-            showToast('La contraseña debe tener al menos 4 caracteres', 'error');
-            return;
-        }
-
-        if (newPass !== confirmPass) {
-            showToast('Las contraseñas no coinciden', 'error');
-            return;
-        }
-
-        const hash = await hashPassword(newPass);
-        localStorage.setItem('nachoigna_adminHash', hash);
-        cfgNewPass.value = '';
-        cfgConfirmPass.value = '';
-        showToast('Contraseña cambiada exitosamente');
-    });
-
-    // Hero image upload
-    heroUpload.addEventListener('change', async (e) => {
-        const files = Array.from(e.target.files);
-        for (const file of files) {
-            if (!file.type.startsWith('image/') || heroImages.length >= 3) continue;
-            try {
-                const dataUrl = await resizeImage(file, 1920, 0.7);
-                heroImages.push(dataUrl);
-            } catch (err) {
-                console.error(err);
+            const doc = await db.collection('config').doc('main').get();
+            if (doc.exists) {
+                const data = doc.data();
+                cfgInstagram.value = data.instagram || '';
+                cfgYoutube.value = data.youtube || '';
+                cfgSpotify.value = data.spotify || '';
+                cfgWhatsapp.value = data.whatsapp || '';
             }
+        } catch (err) {
+            console.error('Error cargando config:', err);
         }
-        // Keep max 3
-        heroImages = heroImages.slice(0, 3);
-        try {
-            localStorage.setItem('nachoigna_heroImages', JSON.stringify(heroImages));
-        } catch {
-            showToast('Error: imágenes demasiado grandes', 'error');
-        }
-        renderHeroPreview();
-        showToast('Fotos del hero actualizadas');
-        heroUpload.value = '';
-    });
-
-    function renderHeroPreview() {
-        heroPreviewRow.innerHTML = '';
-        heroImages.forEach((src, i) => {
-            const item = document.createElement('div');
-            item.className = 'hero-preview-item';
-            item.innerHTML = `
-                <img src="${src}" alt="Hero ${i + 1}">
-                <button class="hero-delete" title="Eliminar"><i class="fas fa-times"></i></button>
-            `;
-            item.querySelector('.hero-delete').addEventListener('click', () => {
-                heroImages.splice(i, 1);
-                localStorage.setItem('nachoigna_heroImages', JSON.stringify(heroImages));
-                renderHeroPreview();
-                showToast('Foto eliminada');
-            });
-            heroPreviewRow.appendChild(item);
-        });
     }
+
+    saveConfigBtn.addEventListener('click', async () => {
+        saveConfigBtn.disabled = true;
+        try {
+            await db.collection('config').doc('main').set({
+                instagram: cfgInstagram.value.trim(),
+                youtube: cfgYoutube.value.trim(),
+                spotify: cfgSpotify.value.trim(),
+                whatsapp: cfgWhatsapp.value.trim(),
+            }, { merge: true });
+            showToast('Configuración guardada');
+        } catch {
+            showToast('Error al guardar', 'error');
+        }
+        saveConfigBtn.disabled = false;
+    });
 
     // ===================== LOAD ALL =====================
-    function loadAllData() {
-        loadFechas();
-        loadGallery();
-        loadPresskit();
-        loadConfig();
+    async function loadAllData() {
+        try {
+            await Promise.all([
+                loadFechas(),
+                loadGallery(),
+                loadVenues(),
+                loadHeroImages(),
+                loadPresskit(),
+                loadConfig(),
+            ]);
+        } catch (err) {
+            console.error('Error cargando datos:', err);
+            showToast('Error al cargar datos', 'error');
+        }
     }
 });

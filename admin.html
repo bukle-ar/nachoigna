@@ -4,30 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>Admin - NACHO IGNA</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/admin.css">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
 </head>
 <body>
 
     <!-- ===================== LOGIN ===================== -->
     <div class="login-screen" id="loginScreen">
         <div class="login-card">
-            <div class="login-logo">NI</div>
             <h1 class="login-title">Panel de Admin</h1>
-            <p class="login-subtitle">Ingresá tu contraseña para acceder</p>
+            <p class="login-subtitle">Ingresá tus credenciales para acceder</p>
             <div class="login-form">
                 <div class="input-group">
-                    <input type="password" id="loginPassword" placeholder="Contraseña" autocomplete="current-password">
+                    <label for="loginEmail"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="loginEmail" placeholder="tu@email.com" autocomplete="email" required>
+                </div>
+                <div class="input-group">
+                    <label for="loginPassword"><i class="fas fa-lock"></i> Contraseña</label>
+                    <input type="password" id="loginPassword" placeholder="Contraseña" autocomplete="current-password" required>
                     <button class="input-eye" id="togglePass" type="button" aria-label="Mostrar contraseña">
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>
                 <button class="btn btn-primary btn-full" id="loginBtn">INGRESAR</button>
-                <p class="login-error" id="loginError"></p>
+                <p class="login-error" id="loginError" role="alert"></p>
             </div>
             <a href="index.html" class="login-back"><i class="fas fa-arrow-left"></i> Volver al sitio</a>
         </div>
@@ -145,19 +158,58 @@
                     <p class="empty-state" id="galleryAdminEmpty">No hay fotos en la galería. ¡Subí tu primera foto!</p>
                 </div>
 
-                <p class="gallery-note"><i class="fas fa-info-circle"></i> Las fotos se almacenan en el navegador. Tamaño máximo recomendado: 2MB por foto.</p>
+                <p class="gallery-note"><i class="fas fa-info-circle"></i> Las fotos se suben a Cloudinary y se almacenan de forma permanente.</p>
             </div>
 
             <!-- ---- PRESSKIT TAB ---- -->
             <div class="tab-content" id="tab-presskit">
                 <div class="tab-header">
                     <div>
-                        <h2 class="tab-title">Presskit / Biografía</h2>
-                        <p class="tab-desc">Editá tu biografía y trayectoria</p>
+                        <h2 class="tab-title">Presskit</h2>
+                        <p class="tab-desc">Venues destacados y biografía</p>
                     </div>
                 </div>
 
+                <!-- Venues: Boliches & Bares -->
                 <div class="form-card">
+                    <h3 class="form-title">Boliches & Bares</h3>
+                    <div class="data-list" id="venuesBaresList"></div>
+                    <div class="form-actions" style="margin-top:12px; justify-content: flex-start;">
+                        <button class="btn btn-secondary btn-small" id="addVenueBarBtn">
+                            <i class="fas fa-plus"></i> Agregar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Venues: Shows -->
+                <div class="form-card">
+                    <h3 class="form-title">Shows / Fiestas</h3>
+                    <div class="data-list" id="venuesShowsList"></div>
+                    <div class="form-actions" style="margin-top:12px; justify-content: flex-start;">
+                        <button class="btn btn-secondary btn-small" id="addVenueShowBtn">
+                            <i class="fas fa-plus"></i> Agregar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Venue Add/Edit Form -->
+                <div class="form-card" id="venueForm" style="display:none;">
+                    <h3 class="form-title" id="venueFormTitle">Nuevo Venue</h3>
+                    <div class="input-group">
+                        <label for="venueName">Nombre</label>
+                        <input type="text" id="venueName" placeholder="Ej: Cruza Recoleta" maxlength="80">
+                    </div>
+                    <input type="hidden" id="venueEditId" value="">
+                    <input type="hidden" id="venueCategory" value="">
+                    <div class="form-actions">
+                        <button class="btn btn-secondary" id="cancelVenueBtn">Cancelar</button>
+                        <button class="btn btn-primary" id="saveVenueBtn">Guardar</button>
+                    </div>
+                </div>
+
+                <!-- Biografía -->
+                <div class="form-card">
+                    <h3 class="form-title">Biografía</h3>
                     <div class="input-group">
                         <label for="presskitTextarea">Tu biografía</label>
                         <textarea id="presskitTextarea" rows="10" placeholder="Escribí tu biografía acá..." maxlength="2000"></textarea>
@@ -176,7 +228,7 @@
                 <div class="tab-header">
                     <div>
                         <h2 class="tab-title">Configuración</h2>
-                        <p class="tab-desc">Redes sociales, contraseña y más</p>
+                        <p class="tab-desc">Redes sociales, fotos del inicio y seguridad</p>
                     </div>
                 </div>
 
@@ -200,19 +252,16 @@
                             <input type="url" id="cfgWhatsapp" placeholder="https://wa.me/549...">
                         </div>
                     </div>
-                </div>
-
-                <div class="form-card">
-                    <h3 class="form-title">Texto del Inicio</h3>
-                    <div class="input-group">
-                        <label for="cfgHeroDesc">Descripción debajo de tu nombre</label>
-                        <input type="text" id="cfgHeroDesc" placeholder="Ej: Sesiones que mueven al público" maxlength="80">
+                    <div class="form-actions" style="margin-top:16px;">
+                        <button class="btn btn-primary" id="saveConfigBtn">
+                            <i class="fas fa-save"></i> Guardar Redes
+                        </button>
                     </div>
                 </div>
 
                 <div class="form-card">
                     <h3 class="form-title">Fotos del Inicio (Hero)</h3>
-                    <p class="form-hint">Subí hasta 3 fotos que se mostrarán rotando en el fondo del inicio.</p>
+                    <p class="form-hint">Subí hasta 4 fotos que se mostrarán rotando en el fondo del inicio.</p>
                     <label class="btn btn-secondary" for="heroUpload" style="margin-top:12px;">
                         <i class="fas fa-upload"></i> Subir Fotos del Hero
                     </label>
@@ -221,25 +270,10 @@
                 </div>
 
                 <div class="form-card">
-                    <h3 class="form-title">Cambiar Contraseña</h3>
-                    <div class="form-grid">
-                        <div class="input-group">
-                            <label for="cfgNewPass">Nueva contraseña</label>
-                            <input type="password" id="cfgNewPass" placeholder="Mínimo 4 caracteres" minlength="4">
-                        </div>
-                        <div class="input-group">
-                            <label for="cfgConfirmPass">Confirmar contraseña</label>
-                            <input type="password" id="cfgConfirmPass" placeholder="Repetí la contraseña">
-                        </div>
-                    </div>
-                    <button class="btn btn-secondary" id="changePassBtn" style="margin-top:12px;">
-                        <i class="fas fa-key"></i> Cambiar Contraseña
-                    </button>
-                </div>
-
-                <div class="form-actions" style="margin-top:24px;">
-                    <button class="btn btn-primary" id="saveConfigBtn">
-                        <i class="fas fa-save"></i> Guardar Configuración
+                    <h3 class="form-title">Seguridad</h3>
+                    <p class="form-hint" style="margin-bottom:16px;">Si necesitás cambiar tu contraseña, te enviamos un email para resetearla.</p>
+                    <button class="btn btn-secondary" id="resetPassBtn">
+                        <i class="fas fa-key"></i> Enviar Email de Reset
                     </button>
                 </div>
             </div>
