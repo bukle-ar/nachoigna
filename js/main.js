@@ -120,9 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fotos por defecto desde assets/
     return [
         'assets/hero-01.jpeg',
-        'assets/hero-02.jpeg',
-        'assets/hero-03.jpeg',
-        'assets/hero-04.jpeg'
+        'assets/hero-02.JPEG',
+        'assets/hero-03.JPEG',
+        'assets/hero-04.JPEG'
     ];
     })();
     if (heroImages.length > 0) {
