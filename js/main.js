@@ -95,9 +95,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ===================== APPLY CONFIG =====================
     function setSocialLinks() {
         const mappings = [
-            { ids: ['heroInstagram', 'contactInstagram', 'footerInstagram', 'mobileInstagram'], url: config.instagram },
-            { ids: ['heroYoutube', 'contactYoutube', 'footerYoutube', 'mobileYoutube'], url: config.youtube },
-            { ids: ['heroSpotify', 'contactSpotify', 'footerSpotify', 'mobileSpotify'], url: config.spotify },
+            { ids: ['heroInstagram', 'contactInstagram', 'mobileInstagram'], url: config.instagram },
+            { ids: ['heroYoutube', 'contactYoutube', 'mobileYoutube'], url: config.youtube },
+            { ids: ['heroSpotify', 'contactSpotify', 'mobileSpotify'], url: config.spotify },
             { ids: ['heroWhatsapp', 'contactWhatsapp', 'mobileWhatsapp'], url: config.whatsapp },
         ];
 
@@ -385,13 +385,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (e.key === 'ArrowRight') lightboxNext.click();
     });
 
-    // ===================== FOOTER TOP =====================
-    const footerTop = document.getElementById('footerTop');
-    if (footerTop) {
-        footerTop.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-    }
 
     // ===================== RIDER MODAL =====================
     const openRiderBtn = document.getElementById('openRiderBtn');

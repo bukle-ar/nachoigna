@@ -279,8 +279,12 @@
         <button class="rider-zoom-close" id="riderZoomClose"><i class="fas fa-times"></i></button>
     </div>
 
-    <!-- ===================== CONTACTO ===================== -->
+    <!--CONTACTO-->
     <section class="section contacto" id="contacto">
+        <video class="contacto-video" autoplay muted loop playsinline>
+            <source src="assets/video-nachoigna.mp4" type="video/mp4">
+        </video>
+        <div class="contacto-overlay"></div>
         <div class="container">
             <div class="section-header" data-animate="fade-right">
                 <span class="section-number">05</span>
@@ -289,47 +293,30 @@
             </div>
             <div class="contacto-content">
                 <p class="contacto-subtitle" data-animate="fade-up">Para consultas y bookings</p>
-                <div class="contacto-buttons" data-animate="fade-up">
-                    <a href="#" class="contacto-btn contacto-btn-whatsapp" id="contactWhatsapp" target="_blank" rel="noopener noreferrer">
+                <div class="contacto-social-icons" data-animate="fade-up">
+                    <a href="#" class="contacto-icon-link" id="contactWhatsapp" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
                         <i class="fab fa-whatsapp"></i>
-                        <span>WhatsApp</span>
                     </a>
-                    <a href="#" class="contacto-btn contacto-btn-instagram" id="contactInstagram" target="_blank" rel="noopener noreferrer">
+                    <a href="#" class="contacto-icon-link" id="contactInstagram" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                         <i class="fab fa-instagram"></i>
-                        <span>Instagram</span>
                     </a>
-                </div>
-                <div class="contacto-links" data-animate="fade-up">
-                    <h3>ESCUCHÁ MI MÚSICA</h3>
-                    <div class="links-row">
-                        <a href="#" class="link-btn link-btn-youtube" id="contactYoutube" target="_blank" rel="noopener noreferrer">
-                            <i class="fab fa-youtube"></i>
-                            <span>YouTube</span>
-                        </a>
-                        <a href="#" class="link-btn link-btn-spotify" id="contactSpotify" target="_blank" rel="noopener noreferrer">
-                            <i class="fab fa-spotify"></i>
-                            <span>Spotify</span>
-                        </a>
-                    </div>
+                    <a href="#" class="contacto-icon-link" id="contactYoutube" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                    <a href="#" class="contacto-icon-link" id="contactSpotify" target="_blank" rel="noopener noreferrer" aria-label="Spotify">
+                        <i class="fab fa-spotify"></i>
+                    </a>
                 </div>
             </div>
         </div>
+        
+        <div class="contacto-credits">
+            <p>© 2025 Nacho Igna. Todos los derechos reservados.</p>
+            <p>Desarrollado por Bukle | Agencia de Software & IA</p>
+        </div>
+        
     </section>
 
-    <!-- ===================== FOOTER ===================== -->
-    <footer class="footer">
-        <div class="footer-content">
-            <img src="assets/logo-nachoigna.PNG" alt="Nacho Igna" class="footer-logo-img">
-            <div class="footer-social">
-                <a href="#" class="footer-social-link" id="footerInstagram" aria-label="Instagram" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="footer-social-link" id="footerYoutube" aria-label="YouTube" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i></a>
-                <a href="#" class="footer-social-link" id="footerSpotify" aria-label="Spotify" target="_blank" rel="noopener noreferrer"><i class="fab fa-spotify"></i></a>
-            </div>
-            <button class="footer-top" id="footerTop" aria-label="Volver arriba">
-                <i class="fas fa-arrow-up"></i> Volver Arriba
-            </button>
-        </div>
-    </footer>
 
     <script src="js/main.js"></script>
 </body>

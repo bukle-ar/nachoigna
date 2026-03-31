@@ -281,29 +281,14 @@
     }
 
     /* Contacto */
-    .contacto-buttons {
-        flex-direction: column;
-        align-items: center;
-        gap: 16px;
+    .contacto-social-icons {
+        gap: 24px;
     }
 
-    .contacto-btn {
-        width: 100%;
-        max-width: 320px;
-        justify-content: center;
-        padding: 16px 32px;
-    }
-
-    .links-row {
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .link-btn {
-        width: 100%;
-        max-width: 320px;
-        justify-content: center;
+    .contacto-icon-link {
+        width: 52px;
+        height: 52px;
+        font-size: 1.3rem;
     }
 
     /* Lightbox */
@@ -329,14 +314,12 @@
     }
 
     /* Footer */
-    .footer {
-        padding: 24px 20px;
+    .contacto-credits {
+        bottom: 16px;
     }
 
-    .footer-content {
-        flex-direction: column;
-        gap: 20px;
-        text-align: center;
+    .contacto-credits p {
+        font-size: 0.65rem;
     }
 
     /* Presskit */

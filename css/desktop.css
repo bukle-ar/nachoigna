@@ -56,7 +56,7 @@ html {
     border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--red);
+    background: var(--red)
 }
 
 body {
@@ -85,11 +85,13 @@ body::before {
     height: 200%;
     background-image: url('../assets/logo-nachoigna.PNG');
     background-repeat: repeat;
-    background-size: 300px auto; /* Podés modificar este valor para agrandar o achicar el logo */
-    opacity: 0.02; /* Opacidad baja para que sea una marca de agua sutil y no moleste la lectura */
-    transform: rotate(-25deg); /* Le da la inclinación diagonal */
-    pointer-events: none; /* Evita que el logo interfiera si el usuario hace click */
-    z-index: -1; /* Lo manda al fondo de todo. Como tu sección .hero tiene fondo propio, tapará esta marca de agua ahí arriba. */
+    background-size: 300px auto; 
+    opacity: 0.04; 
+    transform: rotate(-25deg); 
+    pointer-events: none; 
+    z-index: -1; 
+    /* Esta es la propiedad nueva que difumina el fondo: */
+    filter: blur(4px); 
 }
 
 a {
@@ -925,6 +927,41 @@ img {
 }
 
 /* ---- CONTACTO ---- */
+.contacto {
+    position: relative;
+    overflow: hidden;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding-bottom: 80px;
+}
+
+.contacto .section-number {
+    color: var(--white);
+}
+
+.contacto-video {
+    object-position: center 30%;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+.contacto-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 10, 10, 0.7);
+    z-index: 1;
+}
+
+.contacto .container {
+    position: relative;
+    z-index: 2;
+}
+
 .contacto-content {
     text-align: center;
     max-width: 700px;
@@ -933,167 +970,60 @@ img {
 
 .contacto-subtitle {
     font-size: 1.2rem;
-    color: var(--white-soft);
+    color: #ffffff;
     font-weight: 300;
     letter-spacing: 2px;
     margin-bottom: 40px;
 }
 
-.contacto-buttons {
+.contacto-social-icons {
     display: flex;
     justify-content: center;
-    gap: 24px;
-    margin-bottom: 60px;
+    gap: 32px;
 }
 
-.contacto-btn {
+.contacto-icon-link {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.4);
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 18px 40px;
-    border-radius: 60px;
-    font-family: var(--font-display);
-    font-size: 1.1rem;
-    letter-spacing: 3px;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 1.5rem;
     transition: all var(--transition-fast);
-    position: relative;
-    overflow: hidden;
 }
 
-.contacto-btn::before {
-    content: '';
+.contacto-icon-link:hover {
+    border-color: #ffffff;
+    transform: translateY(-4px) scale(1.1);
+    box-shadow: 0 8px 24px rgba(255, 255, 255, 0.15);
+}
+
+.contacto-credits {
     position: absolute;
-    inset: 0;
-    border-radius: 60px;
-    opacity: 0;
-    transition: opacity var(--transition-fast);
+    bottom: 24px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    z-index: 2;
 }
 
-.contacto-btn-whatsapp {
-    background: linear-gradient(135deg, var(--red), var(--red-dark));
-    color: var(--white);
+.contacto-credits p {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.45);
+    letter-spacing: 1px;
+    line-height: 1.8;
 }
 
-.contacto-btn-whatsapp:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(212,22,60,0.4);
-}
-
-.contacto-btn-instagram {
-    background: linear-gradient(135deg, var(--red-dark), var(--red));
-    color: var(--white);
-    border: 1px solid rgba(212,22,60,0.3);
-}
-
-.contacto-btn-instagram:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(212,22,60,0.4);
-}
-
-.contacto-links {
-    padding-top: 40px;
-    border-top: 1px solid rgba(255,255,255,0.06);
-}
-
-.contacto-links h3 {
-    font-family: var(--font-display);
-    font-size: 1.4rem;
-    letter-spacing: 5px;
-    color: var(--white-soft);
-    margin-bottom: 24px;
-}
-
-.links-row {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-}
-
-.link-btn {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 32px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.1);
-    font-family: var(--font-display);
-    font-size: 1rem;
-    letter-spacing: 2px;
-    color: var(--white-soft);
-    transition: all var(--transition-fast);
-}
-
-.link-btn:hover {
-    transform: translateY(-3px);
-}
-
-.link-btn-youtube:hover {
-    border-color: #FF0000;
-    color: #FF0000;
-    box-shadow: 0 8px 24px rgba(255, 0, 0, 0.15);
-}
-
-.link-btn-spotify:hover {
-    border-color: var(--red);
-    color: var(--red);
-    box-shadow: 0 8px 24px rgba(212, 22, 60, 0.2);
-}
-
-/* ---- FOOTER ---- */
-.footer {
-    border-top: 1px solid rgba(255,255,255,0.04);
-    padding: 40px;
-}
-
-.footer-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.footer-name {
-    font-family: var(--font-display);
-    font-size: 1.2rem;
-    letter-spacing: 5px;
-    color: var(--gray);
-}
-
-.footer-social {
-    display: flex;
-    gap: 16px;
-}
-
-.footer-social-link {
-    color: var(--gray);
-    font-size: 1.1rem;
+.contacto-credits a {
+    color: rgba(255, 255, 255, 0.6);
     transition: color var(--transition-fast);
 }
 
-.footer-social-link:hover {
-    color: var(--red);
-}
-
-.footer-top {
-    background: none;
-    border: 1px solid rgba(255,255,255,0.1);
-    color: var(--gray);
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-family: var(--font-display);
-    font-size: 0.85rem;
-    letter-spacing: 3px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all var(--transition-fast);
-}
-
-.footer-top:hover {
-    color: var(--white);
-    border-color: var(--red);
+.contacto-credits a:hover {
+    color: #ffffff;
 }
 
 /* ==========================================
