@@ -648,7 +648,7 @@ document.addEventListener('DOMContentLoaded', () => {
     heroUpload.addEventListener('change', async (e) => {
             const files = Array.from(e.target.files);
             for (const file of files) {
-                if (!file.type.startsWith('image/') || heroImages.length >= 4) continue;
+                if (!file.type.startsWith('image/') || heroImages.length >= 10) continue;
 
                 // NUEVO: Validación de tamaño máximo (10MB)
                 if (file.size > 10485760) {
@@ -671,44 +671,6 @@ document.addEventListener('DOMContentLoaded', () => {
         await loadHeroImages();
         showToast('Fotos del hero actualizadas');
         heroUpload.value = '';
-    });
-
-    // ===================== PRESSKIT / BIOGRAFÍA =====================
-    const presskitTextarea = document.getElementById('presskitTextarea');
-    const presskitCharCount = document.getElementById('presskitCharCount');
-    const savePresskitBtn = document.getElementById('savePresskitBtn');
-
-    async function loadPresskit() {
-        try {
-            const doc = await db.collection('config').doc('main').get();
-            if (doc.exists && doc.data().presskitBio) {
-                presskitTextarea.value = doc.data().presskitBio;
-                presskitCharCount.textContent = doc.data().presskitBio.length;
-            }
-        } catch {}
-    }
-
-    presskitTextarea.addEventListener('input', () => {
-        presskitCharCount.textContent = presskitTextarea.value.length;
-    });
-
-    savePresskitBtn.addEventListener('click', async () => {
-        const bio = presskitTextarea.value.trim();
-        if (!bio) {
-            showToast('La biografía no puede estar vacía', 'error');
-            return;
-        }
-        savePresskitBtn.disabled = true;
-        try {
-            await db.collection('config').doc('main').set(
-                { presskitBio: bio },
-                { merge: true }
-            );
-            showToast('Biografía guardada');
-        } catch {
-            showToast('Error al guardar', 'error');
-        }
-        savePresskitBtn.disabled = false;
     });
 
     // ===================== CONFIG (Redes Sociales) =====================
@@ -757,7 +719,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadGallery(),
                 loadVenues(),
                 loadHeroImages(),
-                loadPresskit(),
                 loadConfig(),
             ]);
         } catch (err) {

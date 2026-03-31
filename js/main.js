@@ -111,27 +111,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     setSocialLinks();
 
     // ===================== HERO BACKGROUND SLIDESHOW =====================
-    const slides = document.querySelectorAll('.hero-bg-slide');
+    const heroBgContainer = document.getElementById('heroBgContainer');
     let currentSlide = 0;
+    let slides = [];
+
+    const fallbackGradients = [
+        'linear-gradient(135deg, #1a0011 0%, #3d0a2e 30%, #0a0a0a 70%, #1a0505 100%)',
+        'linear-gradient(225deg, #0a0a0a 0%, #2d0a0a 30%, #1a0033 70%, #0a0a0a 100%)',
+        'linear-gradient(45deg, #1a0033 0%, #0a0a0a 40%, #3d0a0a 80%, #0a0a0a 100%)',
+    ];
 
     if (heroImageUrls.length > 0) {
-        slides.forEach((slide, i) => {
-            if (heroImageUrls[i % heroImageUrls.length]) {
-                slide.style.background = 'none';
-                slide.style.backgroundImage = `url(${heroImageUrls[i % heroImageUrls.length]})`;
-                slide.style.backgroundSize = 'cover';
-                slide.style.backgroundPosition = 'center';
-            }
+        // Crear un slide por cada foto subida
+        heroImageUrls.forEach((url, i) => {
+            const slide = document.createElement('div');
+            slide.className = 'hero-bg-slide';
+            slide.style.backgroundImage = `url(${url})`;
+            slide.style.backgroundSize = 'cover';
+            slide.style.backgroundPosition = 'center';
+            if (i === 0) slide.classList.add('active');
+            heroBgContainer.appendChild(slide);
+        });
+    } else {
+        // Sin fotos: mostrar gradientes de fallback
+        fallbackGradients.forEach((gradient, i) => {
+            const slide = document.createElement('div');
+            slide.className = 'hero-bg-slide';
+            slide.style.background = gradient;
+            if (i === 0) slide.classList.add('active');
+            heroBgContainer.appendChild(slide);
         });
     }
 
-    function nextSlide() {
-        slides[currentSlide].classList.remove('active');
-        currentSlide = (currentSlide + 1) % slides.length;
-        slides[currentSlide].classList.add('active');
-    }
+    slides = heroBgContainer.querySelectorAll('.hero-bg-slide');
 
-    setInterval(nextSlide, 5000);
+    if (slides.length > 1) {
+        setInterval(() => {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }, 5000);
+    }
 
     // ===================== PARTICLES =====================
     const particlesContainer = document.getElementById('heroParticles');
