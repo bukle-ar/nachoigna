@@ -567,14 +567,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     galleryUpload.addEventListener('change', async (e) => {
         const files = Array.from(e.target.files);
+
+        
+
         if (files.length === 0) return;
 
         showToast('Subiendo fotos... puede tardar unos segundos');
         let uploaded = 0;
 
         for (const file of files) {
-            if (!file.type.startsWith('image/')) continue;
-            try {
+                    if (!file.type.startsWith('image/')) continue;
+                    
+                    // NUEVO: Validación de tamaño máximo (10MB)
+                    if (file.size > 10485760) {
+                        showToast(`La imagen ${file.name} supera los 10MB permitidos`, 'error');
+                        continue; // Salta esta imagen y sigue con la próxima
+                    }
+
+                    try {
                 const url = await uploadToCloudinary(file, 'gallery');
                 const maxOrder = gallery.reduce((max, p) => Math.max(max, p.order || 0), 0);
 
@@ -614,14 +624,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderHeroPreview() {
-        heroPreviewRow.innerHTML = '';
-        heroImages.forEach((img) => {
-            const item = document.createElement('div');
-            item.className = 'hero-preview-item';
-            item.innerHTML = `
-                <img src="${img.src}" alt="Hero">
-                <button class="hero-delete" title="Eliminar"><i class="fas fa-times"></i></button>
-            `;
+        heroPreviewRow.innerHTML = '';
+        heroImages.forEach((img) => {
+            const item = document.createElement('div');
+            item.className = 'hero-preview-item';
+            item.innerHTML = `
+                <img src="${escapeHtml(img.src)}" alt="Hero"> 
+                <button class="hero-delete" title="Eliminar"><i class="fas fa-times"></i></button>
+            `;
             item.querySelector('.hero-delete').addEventListener('click', async () => {
                 try {
                     await db.collection('heroImages').doc(img.id).delete();
@@ -636,10 +646,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     heroUpload.addEventListener('change', async (e) => {
-        const files = Array.from(e.target.files);
-        for (const file of files) {
-            if (!file.type.startsWith('image/') || heroImages.length >= 4) continue;
-            try {
+            const files = Array.from(e.target.files);
+            for (const file of files) {
+                if (!file.type.startsWith('image/') || heroImages.length >= 4) continue;
+
+                // NUEVO: Validación de tamaño máximo (10MB)
+                if (file.size > 10485760) {
+                    showToast(`La imagen ${file.name} supera los 10MB permitidos`, 'error');
+                    continue;
+                }
+
+                try {
                 showToast('Subiendo foto del hero...');
                 const url = await uploadToCloudinary(file, 'hero');
                 await db.collection('heroImages').add({
