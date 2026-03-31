@@ -744,3 +744,9 @@ a { text-decoration: none; color: inherit; }
         display: block;
     }
 }
+
+/* Cambia el color del icono del calendario a blanco */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
